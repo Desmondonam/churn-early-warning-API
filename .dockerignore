@@ -17,6 +17,5 @@ reports
 models
 data/interim
 data/processed
-uv.lock
 Dockerfile
 render.yaml

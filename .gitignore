@@ -26,3 +26,6 @@ reports/figures/*
 Thumbs.db
 .vscode/
 .idea/
+
+# Not using uv; pip + venv only
+uv.lock
