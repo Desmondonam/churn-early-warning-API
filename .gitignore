@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Environment
+.env
+
+# Data: keep folder structure, not generated files
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+
+# Model artifacts and generated reports
+models/*
+!models/.gitkeep
+reports/figures/*
+!reports/figures/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
