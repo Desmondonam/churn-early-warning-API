@@ -8,6 +8,8 @@ DATA_DIR = PROJECT_ROOT / "data"
 RAW_DATA_PATH = DATA_DIR / "raw" / "telco_churn.csv"
 INTERIM_DIR = DATA_DIR / "interim"
 PROCESSED_DIR = DATA_DIR / "processed"
+TRAIN_PATH = PROCESSED_DIR / "train.csv"
+TEST_PATH = PROCESSED_DIR / "test.csv"
 
 MODELS_DIR = PROJECT_ROOT / "models"
 REPORTS_DIR = PROJECT_ROOT / "reports"
@@ -15,3 +17,4 @@ REPORTS_DIR = PROJECT_ROOT / "reports"
 TARGET = "Churn"
 ID_COLUMN = "customerID"
 RANDOM_STATE = 42
+TEST_SIZE = 0.2
