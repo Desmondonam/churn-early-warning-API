@@ -1,0 +1,13 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# The model is trained inside the Docker build (see Dockerfile), so every deploy
+# retrains from data/raw and ships a fresh model + threshold.
+services:
+  - type: web
+    name: churn-early-warning-api
+    runtime: docker
+    plan: free            # sleeps after ~15 min idle; first request then takes ~30-60 s
+    region: frankfurt     # closest Render region to East Africa
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: checksPass   # deploy on push to main only after GitHub CI passes

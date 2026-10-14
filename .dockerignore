@@ -1,0 +1,22 @@
+# Only src/, data/raw/ and pyproject.toml are needed to build the image.
+.git
+.github
+.venv
+.vscode
+.idea
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+.ruff_cache
+.ipynb_checkpoints
+.env
+
+notebooks
+tests
+reports
+models
+data/interim
+data/processed
+uv.lock
+Dockerfile
+render.yaml

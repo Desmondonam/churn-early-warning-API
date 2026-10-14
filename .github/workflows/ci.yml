@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check src tests
+      - name: Test
+        run: pytest -q
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image (trains the model)
+        run: docker build -t churn-api .
+      - name: Smoke test the container
+        run: |
+          docker run -d --name api -p 8000:8000 churn-api
+          for i in $(seq 1 30); do curl -sf localhost:8000/health && break; sleep 1; done
+          curl -sf localhost:8000/model
+          curl -sf -X POST localhost:8000/predict -H "Content-Type: application/json" -d '{
+            "gender": "Male", "SeniorCitizen": 0, "Partner": "No", "Dependents": "No",
+            "tenure": 2, "PhoneService": "Yes", "MultipleLines": "No",
+            "InternetService": "Fiber optic", "OnlineSecurity": "No", "OnlineBackup": "No",
+            "DeviceProtection": "No", "TechSupport": "No", "StreamingTV": "Yes",
+            "StreamingMovies": "No", "Contract": "Month-to-month", "PaperlessBilling": "Yes",
+            "PaymentMethod": "Electronic check", "MonthlyCharges": 85.0, "TotalCharges": 170.0
+          }'
+      - name: Container logs
+        if: always()
+        run: docker logs api || true
