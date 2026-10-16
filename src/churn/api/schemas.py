@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 YesNo = Literal["Yes", "No"]
 InternetAddon = Literal["Yes", "No", "No internet service"]
+MAX_BATCH_SIZE = 1000
 
 EXAMPLE_CUSTOMER = {
     "customerID": "7590-VHVEG",
@@ -68,7 +69,7 @@ class Prediction(BaseModel):
 
 
 class BatchRequest(BaseModel):
-    customers: list[Customer] = Field(min_length=1, max_length=1000)
+    customers: list[Customer] = Field(min_length=1, max_length=MAX_BATCH_SIZE)
 
 
 class BatchResponse(BaseModel):

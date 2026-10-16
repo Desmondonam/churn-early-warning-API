@@ -27,11 +27,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Build image (trains the model)
+      - name: Build API image (trains the model)
         run: docker build -t churn-api .
-      - name: Smoke test the container
+      - name: Build Streamlit image
+        run: docker build -f app/Dockerfile -t churn-app .
+      - name: Smoke test the API container
         run: |
-          docker run -d --name api -p 8000:8000 churn-api
+          docker network create churn-net
+          docker run -d --name api --network churn-net -p 8000:8000 churn-api
           for i in $(seq 1 30); do curl -sf localhost:8000/health && break; sleep 1; done
           curl -sf localhost:8000/model
           curl -sf -X POST localhost:8000/predict -H "Content-Type: application/json" -d '{
@@ -42,6 +45,19 @@ jobs:
             "StreamingMovies": "No", "Contract": "Month-to-month", "PaperlessBilling": "Yes",
             "PaymentMethod": "Electronic check", "MonthlyCharges": 85.0, "TotalCharges": 170.0
           }'
+      - name: Smoke test the Streamlit container against the API
+        run: |
+          docker run -d --name app --network churn-net -e API_URL=http://api:8000 -p 8501:8501 churn-app
+          for i in $(seq 1 30); do curl -sf localhost:8501/_stcore/health && break; sleep 1; done
+          docker exec app python -c "
+          import os, pandas as pd
+          from churn.client import ChurnApiClient
+          s = ChurnApiClient(os.environ['API_URL']).score_frame(pd.read_csv('app/sample_customers.csv'))
+          assert len(s) == 200, len(s)
+          print('scored', len(s), 'flagged', int(s.will_churn.sum()))
+          "
       - name: Container logs
         if: always()
-        run: docker logs api || true
+        run: |
+          docker logs api || true
+          docker logs app || true

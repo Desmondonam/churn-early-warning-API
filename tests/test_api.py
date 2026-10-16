@@ -1,38 +1,7 @@
-import json
-
-import joblib
 import pytest
-from fastapi.testclient import TestClient
-from sklearn.linear_model import LogisticRegression
 
-from churn.api.main import app
-from churn.data.make_dataset import encode_target, split_xy
-from churn.models.predict import METADATA_FILE, MODEL_FILE, ChurnPredictor
-from churn.models.train import make_pipeline
-
-THRESHOLD = 0.3
-
-
-@pytest.fixture(scope="module")
-def model_dir(raw_df, tmp_path_factory):
-    """Small self-contained model so API tests don't depend on models/ (or CI state)."""
-    d = tmp_path_factory.mktemp("model")
-    X, y = split_xy(encode_target(raw_df))
-    joblib.dump(make_pipeline(LogisticRegression(max_iter=1000)).fit(X, y), d / MODEL_FILE)
-    metrics = {k: 0.5 for k in ("pr_auc", "roc_auc", "precision", "recall", "f1")}
-    (d / METADATA_FILE).write_text(json.dumps({
-        "model": "test_model", "trained_at": "2026-01-01T00:00:00+00:00",
-        "threshold": THRESHOLD, "threshold_strategy": {"name": "max_f1"},
-        "test_metrics": metrics, "input_features": [],
-    }))  # fmt: skip
-    return d
-
-
-@pytest.fixture
-def client(model_dir, monkeypatch):
-    monkeypatch.setenv("CHURN_MODEL_DIR", str(model_dir))
-    with TestClient(app) as c:  # context manager runs the lifespan (model loading)
-        yield c
+from churn.models.predict import ChurnPredictor
+from tests.conftest import THRESHOLD
 
 
 def test_health(client):
