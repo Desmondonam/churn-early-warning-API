@@ -4,17 +4,36 @@ A thin front end over the deployed API (set API_URL). It holds no model itself.
 
 Run locally (with the API running on port 8000):
     streamlit run app/streamlit_app.py
+
+API_URL is read from the environment (Docker/Render) or Streamlit secrets (Community Cloud).
 """
 
 import os
+import sys
 from pathlib import Path
 
 import pandas as pd
 import streamlit as st
 
-from churn.client import ApiError, ChurnApiClient, field_options
+# Streamlit Community Cloud runs this file straight from the repo without installing the
+# package, so make src/ importable. (No-op when churn is already installed or on PYTHONPATH.)
+SRC = Path(__file__).resolve().parents[1] / "src"
+if SRC.is_dir() and str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 
-API_URL = os.getenv("API_URL", "http://127.0.0.1:8000")
+from churn.client import ApiError, ChurnApiClient, field_options  # noqa: E402
+
+
+def _api_url() -> str:
+    if url := os.getenv("API_URL"):
+        return url
+    try:
+        return st.secrets["API_URL"]
+    except Exception:  # no secrets file, or key not set
+        return "http://127.0.0.1:8000"
+
+
+API_URL = _api_url()
 SAMPLE_PATH = Path(__file__).parent / "sample_customers.csv"
 BAND_ICON = {"high": "🔴 High", "medium": "🟠 Medium", "low": "🟢 Low"}
 ADDON_LABELS = {

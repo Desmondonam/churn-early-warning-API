@@ -16,9 +16,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN useradd --create-home --uid 10001 app
 WORKDIR /app
 
-COPY pyproject.toml ./
-RUN python -c "import tomllib; print('\n'.join(tomllib.load(open('pyproject.toml', 'rb'))['project']['optional-dependencies']['app']))" > requirements.txt \
- && pip install -r requirements.txt
+COPY app/requirements.txt ./requirements.txt
+RUN pip install -r requirements.txt
 
 # Only the HTTP client and the request schema it validates against.
 COPY src/churn/__init__.py src/churn/client.py ./src/churn/

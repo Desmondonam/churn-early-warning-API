@@ -38,6 +38,15 @@ def test_renders_when_api_is_down(monkeypatch):
     assert any("Could not reach the API" in e.value for e in at.error)
 
 
+def test_api_url_from_streamlit_secrets(monkeypatch):
+    """Streamlit Community Cloud passes config as secrets, not environment variables."""
+    monkeypatch.delenv("API_URL", raising=False)
+    at = AppTest.from_file(APP, default_timeout=60)
+    at.secrets["API_URL"] = "http://127.0.0.1:9"
+    at.run()
+    assert any("http://127.0.0.1:9" in e.value for e in at.error)
+
+
 def test_sample_data_flow(app_with_api):
     at = app_with_api.run()
     assert not at.exception

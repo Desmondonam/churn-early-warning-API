@@ -82,6 +82,16 @@ streamlit run app/streamlit_app.py           # terminal 2: UI on :8501 (API_URL 
 `app/sample_customers.csv` (200 held-out customers, no `Churn` column) lets anyone try it
 without their own data.
 
+**Streamlit Community Cloud:** at [share.streamlit.io](https://share.streamlit.io) → **Create app**,
+choose this repo, branch `main`, main file `app/streamlit_app.py`. Under **Advanced settings → Secrets** add:
+
+```toml
+API_URL = "https://churn-early-warning-api.onrender.com"
+```
+
+Dependencies come from `app/requirements.txt` (no ML libraries). The API itself must be deployed
+separately (e.g. on Render, below), since Community Cloud only hosts the Streamlit app.
+
 ## Docker
 
 The image **trains the model during the build** (split → train → evaluate), so no model

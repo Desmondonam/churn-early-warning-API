@@ -1,0 +1,6 @@
+# Streamlit front end only: it calls the API over HTTP, so no ML libraries.
+# Used by Streamlit Community Cloud (found next to the entrypoint) and app/Dockerfile.
+streamlit>=1.50
+requests>=2.32
+pandas>=2.2
+pydantic>=2.7
