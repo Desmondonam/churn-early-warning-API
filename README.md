@@ -106,22 +106,20 @@ docker build -f app/Dockerfile -t churn-app .
 docker run --rm -p 8501:8501 -e API_URL=http://host.docker.internal:8000 churn-app
 ```
 
-## Deployment (Render)
+## Deployment
 
-Defined in [render.yaml](render.yaml): two Docker web services on the free plan in Frankfurt.
-
-| Service | URL | Health check |
+| Part | Hosted on | URL |
 |---|---|---|
-| `churn-early-warning-api` | https://churn-early-warning-api.onrender.com | `/health` |
-| `churn-early-warning-app` (Streamlit) | https://churn-early-warning-app.onrender.com | `/_stcore/health` |
+| Backend: FastAPI + model | Render ([render.yaml](render.yaml)) | https://churn-early-warning-api.onrender.com |
+| Front end: Streamlit app | Streamlit Community Cloud | set when the app is created |
 
-The app finds the API through its `API_URL` environment variable.
+The Streamlit app calls the backend through its `API_URL` secret (see above).
 
-- **First-time setup:** Render dashboard → **New → Blueprint** → select this GitHub repo → **Apply**.
+- **First-time setup (backend):** Render dashboard → **New → Blueprint** → select this GitHub repo → **Apply**.
 - **Afterwards:** every push to `main` runs [CI](.github/workflows/ci.yml) (lint, tests, Docker
   build + smoke test). Render deploys only after the checks pass (`autoDeployTrigger: checksPass`).
 - **Free plan:** services sleep after ~15 minutes idle; the first request after that takes ~30-60 s
-  (the app may need to wake the API too, so allow up to about 2 minutes on a cold start).
+  (the Streamlit app waits up to 90 s for the backend to wake).
 
 ## Roadmap
 

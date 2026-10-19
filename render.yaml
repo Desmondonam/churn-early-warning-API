@@ -1,7 +1,7 @@
 # Render Blueprint: https://render.com/docs/blueprint-spec
-# Two services from one repo:
-#   - churn-early-warning-api: FastAPI; the model is trained inside the Docker build
-#   - churn-early-warning-app: Streamlit UI that calls the API over HTTPS
+# Backend only. The Streamlit front end is hosted on Streamlit Community Cloud and reaches
+# this API through its API_URL secret (https://churn-early-warning-api.onrender.com).
+# The model is trained inside the Docker build, so every deploy ships a fresh model.
 services:
   - type: web
     name: churn-early-warning-api
@@ -12,18 +12,3 @@ services:
     dockerContext: .
     healthCheckPath: /health
     autoDeployTrigger: checksPass   # deploy on push to main only after GitHub CI passes
-
-  - type: web
-    name: churn-early-warning-app
-    runtime: docker
-    plan: free
-    region: frankfurt
-    dockerfilePath: ./app/Dockerfile
-    dockerContext: .
-    healthCheckPath: /_stcore/health
-    autoDeployTrigger: checksPass
-    envVars:
-      # Public URL of the API service above. Render derives it from the service name;
-      # if the name was taken and Render added a suffix, update this in the dashboard.
-      - key: API_URL
-        value: https://churn-early-warning-api.onrender.com
